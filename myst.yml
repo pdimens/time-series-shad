@@ -21,15 +21,6 @@ project:
   - title: align
     children:
     - pattern: align/reports/**.ipynb
-  - title: harpy
-    children:
-    - title: harpy
-      children:
-      - title: report
-        children:
-        - title: notebooks
-          children:
-          - pattern: harpy/harpy/report/notebooks/**.ipynb
   - title: Preprocess
     children:
     - pattern: Preprocess/reports/**.ipynb
