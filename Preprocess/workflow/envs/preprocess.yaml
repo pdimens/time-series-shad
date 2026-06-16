@@ -1,0 +1,7 @@
+name: preprocess
+channels:
+- conda-forge
+- bioconda
+dependencies:
+- bioconda::dmox>=0.2
+- bioconda::pheniqs=2.1

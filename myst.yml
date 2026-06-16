@@ -1,0 +1,38 @@
+version: 1
+site:
+  template: book-theme
+  actions:
+  - title: "\U0001F4D6 Docs"
+    url: https://pdimens.github.io/harpy
+  options:
+    favicon: .report/favicon.ico
+    folders: true
+    hide_footer_links: true
+    logo: .report/logo.svg
+    logo_dark: .report/logo-dark.svg
+    logo_text: Harpy Reports
+project:
+  id: a717d629-4d6e-4403-8452-384bed27c15b
+  edit_url: 'null'
+  title: time_series_shad_haplotag
+  description: Harpy reports, powered by Jupyter and MyST.
+  toc:
+  - file: .report/index.md
+  - title: align
+    children:
+    - pattern: align/reports/**.ipynb
+  - title: harpy
+    children:
+    - title: harpy
+      children:
+      - title: report
+        children:
+        - title: notebooks
+          children:
+          - pattern: harpy/harpy/report/notebooks/**.ipynb
+  - title: Preprocess
+    children:
+    - pattern: Preprocess/reports/**.ipynb
+  - title: QC
+    children:
+    - pattern: QC/reports/**.ipynb
