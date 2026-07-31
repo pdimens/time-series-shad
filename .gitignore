@@ -4,3 +4,11 @@
 !*.smk
 !*.md
 harpy/
+.environments
+_build
+*.fq.gz
+.snakemake/
+logs/
+data/
+*.html
+*.gz
