@@ -1,0 +1,9 @@
+Harpy Version: 4.2.0
+
+The harpy qc workflow ran using these parameters:
+
+fastp ran using:
+	fastp  --trim_poly_g --cut_right --length_required 30 --max_len1 150 --disable_adapter_trimming  
+
+The Snakemake command invoked:
+	snakemake --snakefile QC/workflow/workflow.smk --configfile QC/workflow/workflow.yaml --profile QC/workflow/profile.yaml

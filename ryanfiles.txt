@@ -1,0 +1,1 @@
+/fs/cbsubscb16/storage/shad_gsi_msa/lcwgs_gtseq_method_comparison/02-info_files/11-bamlist_index_bams_all.txt

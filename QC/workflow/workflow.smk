@@ -1,4 +1,4 @@
-## SOURCE: Harpy version 4.1
+## SOURCE: Harpy version 4.2.0
 import os
 import re
 
@@ -8,7 +8,7 @@ wildcard_constraints:
 
 WORKFLOW   = config.get('Workflow') or {}
 PARAMETERS = config.get('Parameters') or {}
-REPORTS    = WORKFLOW.get("reports") or {}
+REPORTS    = WORKFLOW.get("reports") or {} 
 INPUTS     = config['Inputs']
 VERSION    = WORKFLOW.get('harpy-version', 'latest')
 
@@ -16,19 +16,21 @@ lr_type       = WORKFLOW.get("linkedreads", {}).get("type", 'none')
 skip_reports  = REPORTS.get("skip", False)
 min_len 	  = PARAMETERS.get("min-len", 30)
 max_len 	  = PARAMETERS.get("max-len", 150)
-extra 	      = PARAMETERS.get("extra", "")
+extra 	      = PARAMETERS.get("extra", "") 
 trim_adapters = PARAMETERS.get("trim-adapters", None)
 dedup         = PARAMETERS.get("deduplicate", False)
 fqlist        = INPUTS
 
 bn_r        = r"([_\.][12]|[_\.][FR]|[_\.]R[12](?:\_00[0-9])*)?\.((fastq|fq)(\.gz)?)$"
 samplenames = {re.sub(bn_r, "", os.path.basename(i), flags = re.IGNORECASE) for i in fqlist}
-if trim_adapters == "auto":
+if not trim_adapters:
+    trim_arg = "--disable_adapter_trimming"
+elif trim_adapters == "auto":
     trim_arg = "--detect_adapter_for_pe"
 elif os.path.isfile(trim_adapters):
     trim_arg = f"--adapter_fasta {trim_adapters}"
 else:
-    trim_arg = "--disable_adapter_trimming"
+    trim_arg = f"--adapter_sequence {trim_adapters}"
 
 def get_fq1(wildcards):
     '''returns a list of fastq files for read 1 based on *wildcards.sample*'''
@@ -66,13 +68,13 @@ rule fastp:
         "envs/qc.yaml"
     container:
         f"docker://pdimens/harpy:qc_{VERSION}"
-    shell:
+    shell: 
         "fastp {params} --thread {threads} -i {input.fw} -I {input.rv} -o {output.fw} -O {output.rv} -h {output.html} -j {output.json} 2> {log.serr}"
 
 rule barcode_stats:
     input:
         "{sample}.R1.fq.gz"
-    output:
+    output: 
         temp("reports/data/{sample}.bxcount")
     log:
         "logs/bxcount/{sample}.count.log"
@@ -95,35 +97,36 @@ rule barcode_report:
         lr = lr_type
     shell:
         """
+        export IPYTHONDIR=/tmp/ipython-lrstats
         {{
-            papermill -k xpython --no-progress-bar --log-level ERROR {input.ipynb} {output.tmp} {params.indir}
-            harpy-utils process-notebook {output.tmp} {params.lr}
-        }} 2> {log} > {output.ipynb}
+            papermill -k ipython-harpy --no-progress-bar --log-level ERROR {input.ipynb} {output.tmp} {params.indir}
+            harpy-utils process-notebook {output.tmp} {params.lr} > {output.ipynb}
+        }} 2> {log}
         """
 
 rule qc_report:
     input:
-        collect("reports/data/fastp/{sample}.fastp.json", sample = samplenames)
+        data = collect("reports/data/fastp/{sample}.fastp.json", sample = samplenames),
+        ipynb = f"workflow/fastp_qc.ipynb"
     output:
-        "reports/qc.report.html"
+        tmp = temp("reports/qc.report.tmp.ipynb"),
+        ipynb = "reports/qc.report.ipynb"
     log:
-        "logs/multiqc.log"
+        "logs/qc.report.log"
     params:
-        module = "-m fastp",
-        options = "-n stdout --no-ai --no-version-check --force --quiet --no-data-dir",
-        title = "--title \"QC Summary\"",
-        comment = "--comment \"This report aggregates trimming and quality control metrics reported by fastp.\"",
-        logdir = "reports/data/fastp/"
-    conda:
-        "envs/qc.yaml"
-    container:
-        f"docker://pdimens/harpy:qc_{VERSION}"
+        "-p indir " + os.path.abspath("reports/data/fastp")
     shell:
-        "multiqc {params} > {output} 2> {log}"
+        """
+        export IPYTHONDIR=/tmp/ipython-fastp
+        {{
+            papermill -k ipython-harpy --no-progress-bar --log-level ERROR {input.ipynb} {output.tmp} {params}
+            harpy-utils process-notebook {output.tmp} > {output.ipynb}
+        }} 2> {log}
+        """
 
 rule all:
     default_target: True
     input:
         fq = collect("{sample}.{FR}.fq.gz", FR = ["R1", "R2"], sample = samplenames),
         bx_report = "reports/barcode.summary.ipynb" if not skip_reports and lr_type != "none" else [],
-        agg_report = "reports/qc.report.html" if not skip_reports else []
+        agg_report = "reports/qc.report.ipynb" if not skip_reports else []    

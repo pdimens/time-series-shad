@@ -18,12 +18,27 @@ project:
   description: Harpy reports, powered by Jupyter and MyST.
   toc:
   - file: .report/index.md
-  - title: align
+  - title: align2
     children:
-    - pattern: align/reports/**.ipynb
+    - pattern: align2/reports/**.ipynb
+  - title: harpy
+    children:
+    - title: harpy
+      children:
+      - title: report
+        children:
+        - title: notebooks
+          children:
+          - pattern: harpy/harpy/report/notebooks/**.ipynb
+  - title: Preproc_S2
+    children:
+    - pattern: Preproc_S2/reports/**.ipynb
   - title: Preprocess
     children:
     - pattern: Preprocess/reports/**.ipynb
   - title: QC
     children:
     - pattern: QC/reports/**.ipynb
+  - title: QC2
+    children:
+    - pattern: QC2/reports/**.ipynb

@@ -1,0 +1,23 @@
+Harpy Version: 4.2.0
+
+The harpy preprocess workflow ran using these parameters:
+
+Linked Read Barcode Design: Iqbal et al. 2026
+
+Input FASTQs had the ME sequence identified and removed, then provided a nucleotide padding sequence (if necessary):
+	gih-stagger --me AGATGTGTATAAGAGACAG --max-mismatch 2 --min-len 10 --stats output.stats FQ1 FQ2 > output.sam
+
+The resulting interleaved unaligned SAM file was then piped into the Pheniqs for barcode demultiplexing:
+	pheniqs mux --output output.sam --quality -c pheniqs.config.json --report output.json < input.sam
+
+Finally, the nucleotides were converted into standardized haplotagging ACBD format and FASTQ format:
+	gih-convert input.sam fq1 fq2 > output.stats
+
+QC checks were performed on demultiplexed FASTQ files using:
+	falco -skip-report -skip-summary -data-filename output input.fq.gz
+
+
+Use the output 'adapters.fasta' file as input into harpy qc
+
+The Snakemake command invoked:
+	snakemake --snakefile Preproc_S4_S7/workflow/workflow.smk --configfile Preproc_S4_S7/workflow/workflow.yaml --profile Preproc_S4_S7/workflow/profile.yaml
